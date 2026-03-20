@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SecretaryWeb | QR Scanner</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="scanner.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- QR Scanner Library -->
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+</head>
+<body>
+    <!-- Background -->
+    <div class="cyber-bg">
+        <div class="grid-overlay"></div>
+        <div class="floating-shapes">
+            <div class="shape shape-1"></div>
+            <div class="shape shape-2"></div>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <header class="scanner-header">
+        <div class="header-brand">
+            <div class="brand-icon">
+                <i class="fa-solid fa-qrcode"></i>
+            </div>
+            <div class="brand-text">
+                <h1>Secretary<span>Web</span></h1>
+                <span class="user-status">
+                    <i class="fa-solid fa-circle"></i>
+                    <span id="userName">Loading...</span>
+                </span>
+            </div>
+        </div>
+        <div class="header-actions">
+            <button class="action-btn" id="historyBtn" title="Scan History">
+                <i class="fa-solid fa-clock-rotate-left"></i>
+            </button>
+            <button class="action-btn danger" id="logoutBtn" title="Logout">
+                <i class="fa-solid fa-power-off"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Scanner Container -->
+    <main class="scanner-main">
+        <!-- Scanner View -->
+        <div class="scanner-container" id="scannerContainer">
+            <div class="scanner-frame">
+                <div class="scanner-overlay">
+                    <div class="scan-corner top-left"></div>
+                    <div class="scan-corner top-right"></div>
+                    <div class="scan-corner bottom-left"></div>
+                    <div class="scan-corner bottom-right"></div>
+                    <div class="scan-line"></div>
+                    <div class="scan-target">
+                        <i class="fa-solid fa-crosshairs"></i>
+                    </div>
+                </div>
+                <div id="qr-reader" class="qr-reader"></div>
+            </div>
+            
+            <div class="scanner-controls">
+                <button class="control-btn" id="toggleCamera">
+                    <i class="fa-solid fa-camera-rotate"></i>
+                    <span>Switch</span>
+                </button>
+                <button class="control-btn primary" id="toggleScan">
+                    <i class="fa-solid fa-play"></i>
+                    <span>Start</span>
+                </button>
+                <button class="control-btn" id="flashToggle">
+                    <i class="fa-solid fa-bolt"></i>
+                    <span>Flash</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Recent Scans Panel -->
+        <div class="scans-panel" id="scansPanel">
+            <div class="panel-header">
+                <h3><i class="fa-solid fa-list-check"></i> Recent Scans</h3>
+                <span class="scan-count" id="scanCount">0</span>
+            </div>
+            <div class="scans-list" id="scansList">
+                <div class="empty-scans">
+                    <i class="fa-solid fa-barcode"></i>
+                    <p>No scans yet</p>
+                    <span>Point camera at QR code</span>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Scan Result Modal -->
+    <div class="result-modal" id="resultModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="success-icon">
+                    <i class="fa-solid fa-check"></i>
+                    <div class="pulse-ring"></div>
+                </div>
+                <h2>Scan Successful!</h2>
+            </div>
+            <div class="modal-body">
+                <div class="data-display">
+                    <label>Student ID</label>
+                    <div class="data-value" id="scannedId">--</div>
+                </div>
+                <div class="data-display">
+                    <label>Timestamp</label>
+                    <div class="data-value" id="scannedTime">--</div>
+                </div>
+                <div class="data-display">
+                    <label>Status</label>
+                    <div class="status-badge" id="scanStatus">
+                        <i class="fa-solid fa-circle-check"></i>
+                        <span>Recorded</span>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" id="closeModal">Close</button>
+                <button class="btn-primary" id="scanAgain">Scan Next</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- History Modal -->
+    <div class="history-modal" id="historyModal">
+        <div class="modal-content wide">
+            <div class="modal-header">
+                <h2><i class="fa-solid fa-clock-rotate-left"></i> Scan History</h2>
+                <button class="close-btn" id="closeHistory">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <div class="history-filters">
+                <input type="date" id="historyDate" class="date-filter">
+                <button class="btn-icon" id="refreshHistory">
+                    <i class="fa-solid fa-rotate"></i>
+                </button>
+            </div>
+            <div class="history-list" id="historyList">
+                <!-- Populated by JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script type="module" src="scanner.js"></script>
+</body>
+</html>
