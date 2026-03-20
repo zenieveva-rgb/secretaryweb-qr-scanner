@@ -184,8 +184,6 @@ async function handleLogin(e) {
     setLoading(elements.loginBtn, true);
     
     try {
-        const userCredential = await signInWithEmailAndPassword(auth, email, password);
-        const user = userCredential.user;
         
         // Check if user is approved
         const userRef = ref(db, `users/${user.uid}`);
@@ -271,27 +269,35 @@ async function handleSignup(e) {
     setLoading(elements.signupBtn, true);
     
     try {
-        // Create auth user
-        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-        const user = userCredential.user;
-        
-        // Create user profile with pending status
-        const userData = {
-            uid: user.uid,
-            firstName,
-            lastName,
-            email,
-            department,
-            employeeId,
-            status: 'pending',
-            role: 'scanner',
-            createdAt: serverTimestamp(),
-            lastLogin: null,
-            approvedBy: null,
-            approvedAt: null
-        };
-        
-        await set(ref(db, `users/${user.uid}`), userData);
+// Generate a unique request ID
+const requestId = Date.now().toString();
+
+// Create pending approval request in the database
+const pendingData = {
+    firstName,
+    lastName,
+    email,
+    department,
+    employeeId,
+    role: 'scanner',
+    status: 'pending',
+    requestedAt: serverTimestamp()
+};
+
+await set(ref(db, `pendingApprovals/${requestId}`), pendingData);
+
+// Optional: notify admin
+await set(ref(db, `adminNotifications/${requestId}`), {
+    type: 'new_user_request',
+    message: `New user ${firstName} ${lastName} (${email}) requests access`,
+    timestamp: serverTimestamp(),
+    read: false
+});
+
+// Show pending screen
+showToast('Request submitted! Wait for admin approval', 'success');
+elements.pendingEmail.textContent = email;
+switchForm('pending');
         
         // Create pending approval request
         await set(ref(db, `pendingApprovals/${user.uid}`), {
@@ -306,9 +312,6 @@ async function handleSignup(e) {
             timestamp: serverTimestamp(),
             read: false
         });
-        
-        // Sign out immediately - require approval
-        await signOut(auth);
         
         showToast('Request submitted successfully!', 'success');
         elements.pendingEmail.textContent = email;
