@@ -16,20 +16,6 @@ import {
     serverTimestamp
 } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-database.js";
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-app.js";
-
-
-function submitRequest(email, firstName, lastName, role) {
-    const id = Date.now().toString();
-
-    set(ref(db, "pendingApprovals/" + id), {
-        email,
-        firstName,
-        lastName,
-        role,
-        status: "pending",
-        requestedAt: Date.now()
-    });
-}
 import { 
     getDatabase, 
     ref, 
@@ -54,6 +40,18 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getDatabase(app);
 
+function submitRequest(email, firstName, lastName, role) {
+    const id = Date.now().toString();
+
+    set(ref(db, "pendingApprovals/" + id), {
+        email,
+        firstName,
+        lastName,
+        role,
+        status: "pending",
+        requestedAt: Date.now()
+    });
+}
 // ==================== STATE MANAGEMENT ====================
 const state = {
     currentUser: null,
