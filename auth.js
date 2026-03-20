@@ -253,93 +253,56 @@ async function handleLogin(e) {
         setLoading(elements.loginBtn, false);
     }
 }
-
 // ==================== SIGNUP HANDLER ====================
 async function handleSignup(e) {
     e.preventDefault();
-    
+
     const firstName = document.getElementById('signupFirstName').value;
     const lastName = document.getElementById('signupLastName').value;
     const email = document.getElementById('signupEmail').value;
     const department = document.getElementById('signupDepartment').value;
     const employeeId = document.getElementById('signupEmployeeId').value;
-    const password = document.getElementById('signupPassword').value;
-    
+
     setLoading(elements.signupBtn, true);
-    
+
     try {
-// Generate a unique request ID
-const requestId = Date.now().toString();
+        // Generate a unique request ID
+        const requestId = Date.now().toString();
 
-// Create pending approval request in the database
-const pendingData = {
-    firstName,
-    lastName,
-    email,
-    department,
-    employeeId,
-    role: 'scanner',
-    status: 'pending',
-    requestedAt: serverTimestamp()
-};
-
-await set(ref(db, `pendingApprovals/${requestId}`), pendingData);
-
-// Optional: notify admin
-await set(ref(db, `adminNotifications/${requestId}`), {
-    type: 'new_user_request',
-    message: `New user ${firstName} ${lastName} (${email}) requests access`,
-    timestamp: serverTimestamp(),
-    read: false
-});
-
-// Show pending screen
-showToast('Request submitted! Wait for admin approval', 'success');
-elements.pendingEmail.textContent = email;
-switchForm('pending');
-        
-        // Create pending approval request
-        await set(ref(db, `pendingApprovals/${user.uid}`), {
-            ...userData,
+        // Save request in pendingApprovals (no Auth user yet!)
+        const pendingData = {
+            firstName,
+            lastName,
+            email,
+            department,
+            employeeId,
+            role: 'scanner',
+            status: 'pending', // optional but useful
             requestedAt: serverTimestamp()
-        });
-        
-        // Log the signup for admin notification
-        await set(ref(db, `adminNotifications/${user.uid}`), {
+        };
+
+        await set(ref(db, `pendingApprovals/${requestId}`), pendingData);
+
+        // Notify admin
+        await set(ref(db, `adminNotifications/${requestId}`), {
             type: 'new_user_request',
             message: `New user ${firstName} ${lastName} (${email}) requests access`,
             timestamp: serverTimestamp(),
             read: false
         });
-        
-        showToast('Request submitted successfully!', 'success');
+
+        // Show pending screen
+        showToast('Request submitted! Wait for admin approval', 'success');
         elements.pendingEmail.textContent = email;
         switchForm('pending');
-        
+
     } catch (error) {
         console.error('Signup error:', error);
-        let message = 'Signup failed';
-        
-        switch(error.code) {
-            case 'auth/email-already-in-use':
-                message = 'An account with this email already exists';
-                break;
-            case 'auth/invalid-email':
-                message = 'Invalid email address';
-                break;
-            case 'auth/weak-password':
-                message = 'Password is too weak';
-                break;
-            default:
-                message = error.message || 'Signup failed. Please try again.';
-        }
-        
-        showToast(message, 'error');
+        showToast('Signup failed: ' + error.message, 'error');
     } finally {
         setLoading(elements.signupBtn, false);
     }
 }
-
 // ==================== FORGOT PASSWORD ====================
 async function handleForgotPassword(e) {
     e.preventDefault();
