@@ -292,21 +292,19 @@ async function handleForgotPassword(e) {
 }
 
 // ==================== AUTH STATE CHECK ====================
-function checkAuthState() {
-    onAuthStateChanged(auth, async (user) => {
-        if (user) {
-            // Check if already approved
-            const userRef = ref(db, `users/${user.uid}`);
-            const snapshot = await get(userRef);
-            
-            if (snapshot.exists() && snapshot.val().status === 'approved') {
-                // Auto-redirect to scanner if on login page
-                if (window.location.pathname.includes('index.html') || window.location.pathname === '/') {
-                    window.location.href = 'scanner.html';
-                }
-            }
-        }
-    });
+onAuthStateChanged(auth, (user) => {
+    if (user) {
+        console.log("Admin UID logged in:", user.uid);
+
+        loginContainer.classList.add("hidden");
+        dashboard.classList.remove("hidden");
+
+        loadRequests(); // ✅ THIS IS THE MISSING PART
+    } else {
+        loginContainer.classList.remove("hidden");
+        dashboard.classList.add("hidden");
+    }
+});
     
     // Check local storage session
     const session = localStorage.getItem('secretaryweb_session');
