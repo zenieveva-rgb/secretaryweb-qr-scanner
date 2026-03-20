@@ -1,12 +1,35 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-app.js";
 import { 
-    getAuth, 
-    createUserWithEmailAndPassword, 
+    getAuth,
     signInWithEmailAndPassword,
-    sendPasswordResetEmail,
     onAuthStateChanged,
-    signOut
+    signOut,
+    createUserWithEmailAndPassword,
+    sendPasswordResetEmail
 } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-auth.js";
+
+import {
+    getDatabase,
+    ref,
+    set,
+    get,
+    onValue,
+    serverTimestamp
+} from "https://www.gstatic.com/firebasejs/9.17.1/firebase-database.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-app.js";
+
+
+function submitRequest(email, firstName, lastName, role) {
+    const id = Date.now().toString();
+
+    set(ref(db, "pendingApprovals/" + id), {
+        email,
+        firstName,
+        lastName,
+        role,
+        status: "pending",
+        requestedAt: Date.now()
+    });
+}
 import { 
     getDatabase, 
     ref, 
@@ -22,7 +45,7 @@ const firebaseConfig = {
     authDomain: "database-98a70.firebaseapp.com",
     databaseURL: "https://database-98a70-default-rtdb.asia-southeast1.firebasedatabase.app",
     projectId: "database-98a70",
-    storageBucket: "database-98a70.firebasestorage.app",
+    storageBucket: "database-98a70.appspot.com",
     messagingSenderId: "460345885965",
     appId: "1:460345885965:web:8484da766b979a0eaf9c44"
 };
