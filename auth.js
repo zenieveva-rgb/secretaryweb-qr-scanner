@@ -173,82 +173,52 @@ function checkPasswordStrength(e) {
 }
 
 // ==================== LOGIN HANDLER ====================
+import { signInWithEmailAndPassword, onAuthStateChanged, signOut } 
+from "https://www.gstatic.com/firebasejs/9.17.1/firebase-auth.js";
+
+import { getDatabase, ref, get, set, serverTimestamp } 
+from "https://www.gstatic.com/firebasejs/9.17.1/firebase-database.js";
+
 async function handleLogin(e) {
     e.preventDefault();
-    
+
     const email = document.getElementById('loginEmail').value;
     const password = document.getElementById('loginPassword').value;
-    const rememberMe = document.getElementById('rememberMe').checked;
-    
+
     setLoading(elements.loginBtn, true);
-    
+
     try {
-        
-        // Check if user is approved
+        // ✅ STEP 1: LOGIN TO FIREBASE AUTH
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        const user = userCredential.user; // 🔥 THIS WAS MISSING BEFORE
+
+        // ✅ STEP 2: CHECK USER IN DATABASE
         const userRef = ref(db, `users/${user.uid}`);
         const snapshot = await get(userRef);
-        
+
         if (!snapshot.exists()) {
-            throw new Error('User data not found');
-        }
-        
-        const userData = snapshot.val();
-        
-        if (userData.status === 'pending') {
             await signOut(auth);
-            showToast('Your account is pending admin approval', 'warning');
-            switchForm('pending');
+            throw new Error("User not found in database");
+        }
+
+        const userData = snapshot.val();
+
+        if (userData.status !== "approved") {
+            await signOut(auth);
+            showToast("Your account is pending admin approval", "warning");
+            switchForm("pending");
             elements.pendingEmail.textContent = email;
             return;
         }
-        
-        if (userData.status === 'blocked') {
-            await signOut(auth);
-            throw new Error('Your account has been blocked. Contact admin.');
-        }
-        
-        if (userData.status !== 'approved') {
-            await signOut(auth);
-            throw new Error('Account not approved');
-        }
-        
-        // Update last login
-        await set(ref(db, `users/${user.uid}/lastLogin`), serverTimestamp());
-        
-        showToast('Login successful! Redirecting...', 'success');
-        
-        // Store session if remember me
-        if (rememberMe) {
-            localStorage.setItem('secretaryweb_session', user.uid);
-        }
-        
-        // Redirect to scanner
-        setTimeout(() => {
-            window.location.href = 'scanner.html';
-        }, 1500);
-        
+
+        // ✅ STEP 3: SUCCESS
+        showToast("Login successful!", "success");
+
+        window.location.href = "scanner.html";
+
     } catch (error) {
-        console.error('Login error:', error);
-        let message = 'Login failed';
-        
-        switch(error.code) {
-            case 'auth/user-not-found':
-                message = 'No account found with this email';
-                break;
-            case 'auth/wrong-password':
-                message = 'Incorrect password';
-                break;
-            case 'auth/invalid-email':
-                message = 'Invalid email address';
-                break;
-            case 'auth/user-disabled':
-                message = 'Account has been disabled';
-                break;
-            default:
-                message = error.message || 'Login failed. Please try again.';
-        }
-        
-        showToast(message, 'error');
+        console.error(error);
+        showToast(error.message, "error");
     } finally {
         setLoading(elements.loginBtn, false);
     }
